@@ -3,5 +3,5 @@
 @tailwind utilities;
 
 body {
-    @apply bg-gradient-to-r from-dark to-green-100
+    @apply bg-dark-2 text-white
 }
