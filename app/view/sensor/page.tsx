@@ -1,3 +1,5 @@
+'use client'
+
 import {
   Table,
   TableBody,
@@ -10,51 +12,14 @@ import {
 } from "@/components/ui/table"
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
+import { useEffect, useState } from "react";
+import Date from "@/app/utils/displayDate";
 
-const datas = [
-  {
-    data: "1",
-    timestamp: "2024-20-10 10:00:00",
-    totalAmount: "$250.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    data: "2",
-    timestamp: "2024-20-10 10:00:00",
-    totalAmount: "$150.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    data: "3",
-    timestamp: "2024-20-10 10:00:00",
-    totalAmount: "$350.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    data: "4",
-    timestamp: "2024-20-10 10:00:00",
-    totalAmount: "$450.00",
-    paymentMethod: "Credit Card",
-  },
-  {
-    data: "5",
-    timestamp: "2024-20-10 10:00:00",
-    totalAmount: "$550.00",
-    paymentMethod: "PayPal",
-  },
-  {
-    data: "6",
-    timestamp: "2024-20-10 10:00:00",
-    totalAmount: "$200.00",
-    paymentMethod: "Bank Transfer",
-  },
-  {
-    data: "7",
-    timestamp: "2024-20-10 10:00:00",
-    totalAmount: "$300.00",
-    paymentMethod: "Credit Card",
-  },
-]
+interface Data{
+  id: number;
+  timestamp: number | Date;
+  value: number;
+}
 
 export default function Page({
   searchParams,
@@ -63,6 +28,29 @@ export default function Page({
 }) {
   const id = Number(searchParams.id);
 
+  const [datas, setDatas] = useState<Data[]>([]);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const fetchData = async() => {
+      try {
+        const res = await fetch(`http://localhost:4000/api/sensor?id=${id}`)
+        if(!res.ok) {
+          throw new Error('Network response was not ok')
+        }
+        const data = await res.json();
+        setDatas(data.results)
+      } catch (error: any) {
+        setError(error.message)
+      } finally {
+        setLoading(false)
+      }
+    }
+    setInterval(() => {
+      fetchData()
+    }, 5000)
+  })
   if (id > 4) {
     return (
       <>
@@ -94,9 +82,9 @@ export default function Page({
             </TableHeader>
             <TableBody>
               {datas.map((data) => (
-                <TableRow key={data.data}>
-                  <TableCell>{data.timestamp}</TableCell>
-                  <TableCell>{data.paymentMethod}</TableCell>
+                <TableRow key={data.id}>
+                  <TableCell><Date dateString={data.timestamp} /></TableCell>
+                  <TableCell>{data.value}</TableCell>
                 </TableRow>
               ))}
             </TableBody>
